@@ -8,7 +8,8 @@ import {registerMail} from'../../helpers/mailer.js'
 
 
 /* POST Methods */
-patientRoute.post('/register',patientController.register)
+patientRoute.post('/register',localVariables,patientController.register)
+patientRoute.post('/verify-otp', patientController.verifyOTP);
 patientRoute.post('/registerMail',registerMail) //send the mail
 patientRoute.post('/authenticate',((req,res)=>res.end()) )
 patientRoute.post('/login',patientController.verifyUser,patientController.login )
@@ -17,8 +18,8 @@ patientRoute.post('/login',patientController.verifyUser,patientController.login 
 /* GET Methods */
 
 patientRoute.get('/user/:name',patientController.getUser)
-patientRoute.get('/generateOTP',patientController.verifyUser,localVariables,patientController.generateOTP)
-patientRoute.get('/verifyOTP',patientController.verifyOTP)
+// patientRoute.get('/generateOTP',patientController.verifyUser,localVariables,patientController.generateOTP)
+patientRoute.get('/verifyOTP',patientController.verifyOtp)
 patientRoute.get('/createResetSession',patientController.createResetSession)
 
 

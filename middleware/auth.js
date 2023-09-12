@@ -24,10 +24,25 @@ export default async function Auth(req,res,next){
 }
 
 
-export function localVariables(req,res,next){
+export function localVariables(req, res, next) {
+    // Destructure the values from the request body
+    const { name, password, profile, email, role, gender } = req.body;
+  
+    // Set the values as properties of req.app.locals
     req.app.locals = {
-        OTP: null,
-        resetSession :false
-    }
-    next()
-}
+      OTP: null,
+      resetSession: false,
+      registrationData: {
+        name,
+        password,
+        profile,
+        email,
+        role,
+        gender,
+      },
+    };
+  
+    next();
+  }
+  
+

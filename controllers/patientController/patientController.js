@@ -1,6 +1,7 @@
 import UserModel from '../../models/UserSchema.js'
 import DoctorModel from '../../models/DoctorSchema.js';
 import Auth from'../../middleware/auth.js'
+import { sendOtpEmail, registerMail } from '../../helpers/mailer.js';
 import bcrypt from'bcrypt'
 import jwt  from 'jsonwebtoken';
 import otpGenerator from'otp-generator'
@@ -26,60 +27,77 @@ export async function verifyUser(req,res,next){
 
 
 
-
 export async function register(req, res) {
-    try {
-        const { name, password, profile, email, role, gender, specialization } = req.body;
+  try {
+    const { name, password, profile, email, role, gender } = req.body;
 
-        // Check for existing user with the same username
-        const existingUsername = await UserModel.findOne({ name });
-        if (existingUsername) {
-            return res.status(400).send({ error: "Please use a unique username" });
-        }
+    // Create a registration data object
+    const registrationData = {
+      name,
+      // Hash the password before saving it
+      password: await bcrypt.hash(password, 10), // You can adjust the saltRounds (10) as needed
+      profile,
+      email,
+      role,
+      gender,
+    };
 
-        // Check for existing user with the same email
-        const existingEmail = await UserModel.findOne({ email });
-        if (existingEmail) {
-            return res.status(400).send({ error: "Please use a unique email" });
-        }
+    // Store registrationData in req.app.locals
+    req.app.locals.registrationData = registrationData;
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if the given username or email already exists, depending on the role
+    const existingUser = role === "patient"
+      ? await UserModel.findOne({ $or: [{ name }, { email }] })
+      : await DoctorModel.findOne({ $or: [{ name }, { email }] });
 
-        // Create a new user based on role and save it to the database
-        let savedUser;
-        if (role === "patient" || role === "admin") {
-            const user = new UserModel({
-                name,
-                password: hashedPassword,
-                profile: profile || '',
-                email,
-                role,
-                gender
-            });
-            savedUser = await user.save();
-        } else if (role === "doctor") {
-            const doctor = new DoctorModel({
-                name,
-                password: hashedPassword,
-                profile: profile || '',
-                email,
-                role,
-                gender
-                // You can add more doctor-specific fields here
-            });
-            savedUser = await doctor.save();
-        } else {
-            return res.status(400).send({ error: "Invalid role" });
-        }
-
-        return res.status(200).send({ msg: "User Register Successfully", user: savedUser });
-    } catch (error) {
-        console.error("Error during registration:", error);
-        return res.status(500).send({ error: "Internal server error" });
+    if (existingUser) {
+      return res.status(400).send({ error: "Please use a unique username and email" });
     }
+
+    // Generate a 6-digit OTP
+    req.app.locals.OTP = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+
+    // Send the OTP via email
+    await sendOtpEmail(email, req.app.locals.OTP);
+    console.log('OTP code:', req.app.locals.OTP);
+
+    // Respond immediately without waiting for OTP verification
+    return res.status(200).send({ msg: "OTP sent to your email" });
+
+  } catch (error) {
+    console.error("Error during registration:", error);
+    return res.status(500).send({ error: "Internal server error" });
+  }
 }
 
+
+export async function verifyOTP(req, res) {
+  try {
+    const { otp } = req.body;
+
+    // Check if the provided OTP matches the OTP stored in app.locals
+    const storedOTP = req.app.locals.OTP;
+
+    if (!storedOTP || storedOTP !== otp) {
+      return res.status(400).send({ error: "Invalid OTP" });
+    }
+
+    // Clear the OTP from app.locals
+    req.app.locals.OTP = null;
+
+    // Retrieve the registration data from app.locals
+    const registrationData = req.app.locals.registrationData;
+
+    // Create a new user document and save it
+    const newUser = new UserModel(registrationData);
+    await newUser.save();
+
+    return res.status(200).send({ msg: "OTP verified successfully and user registered" });
+  } catch (error) {
+    console.error("Error during OTP verification:", error);
+    return res.status(500).send({ error: "Internal server error" });
+  }
+}
 
 
   export async function login(req, res) {
@@ -167,13 +185,13 @@ export async function register(req, res) {
   
 
 
-export async function generateOTP (req,res){
-req.app.locals.OTP = await otpGenerator.generate(6, {lowerCaseAlphabets:false, upperCaseAlphabets: false, specialChars:false})
-res.status(201).send({code:req.app.locals.OTP})
-}
+// export async function generateOTP (req,res){
+// req.app.locals.OTP = await otpGenerator.generate(6, {lowerCaseAlphabets:false, upperCaseAlphabets: false, specialChars:false})
+// res.status(201).send({code:req.app.locals.OTP})
+// }
 
 
-export async function verifyOTP (req,res){
+export async function verifyOtp (req,res){
 const {code} = req.query
 if(parseInt(req.app.locals.OTP)=== parseInt(code)){
   req.app.locals.OTP = null //rest the otp value
