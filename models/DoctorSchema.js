@@ -38,6 +38,11 @@ const DoctorSchema = new mongoose.Schema({
     enum: ["pending", "approved", "cancelled"],
     default: "pending",
   },
+  isBlocked: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   appointments: [{ type: mongoose.Types.ObjectId, ref: "Appointment" }],
 });
 

@@ -1,6 +1,5 @@
 import UserModel from '../../models/UserSchema.js'
 import DoctorModel from '../../models/DoctorSchema.js';
-import Auth from'../../middleware/auth.js'
 import { sendOtpEmail, registerMail } from '../../helpers/mailer.js';
 import bcrypt from'bcrypt'
 import jwt  from 'jsonwebtoken';
@@ -24,40 +23,41 @@ export function generateToken(user) {
 }
 
 
-export const register = async (req, res) => {
-  const { email, password, name, role, photo, gender } = req.body;
-  let user; // Declare the user variable here
+//////////////////////////////////////////////////
+// export const register = async (req, res) => {
+//   const { email, password, name, role, photo, gender } = req.body;
+//   let user; // Declare the user variable here
 
-  try {
-    if (role === 'patient') {
-      user = await UserModel.findOne({ email });
-    } else if (role === 'doctor') {
-      user = await DoctorModel.findOne({ email });
-    }
+//   try {
+//     if (role === 'patient') {
+//       user = await UserModel.findOne({ email });
+//     } else if (role === 'doctor') {
+//       user = await DoctorModel.findOne({ email });
+//     }
 
-    if (user) {
-      // User with the same email already exists
-      return res.status(400).json({ message: 'User with this email already exists.' });
-    }
+//     if (user) {
+//       // User with the same email already exists
+//       return res.status(400).json({ message: 'User with this email already exists.' });
+//     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
+//     const salt = await bcrypt.genSalt(10);
+//     const hashPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user based on the role
-    if (role === 'patient') {
-      user = new UserModel({ email, password: hashPassword, name, role, photo, gender });
-    } else if (role === 'doctor') {
-      user = new DoctorModel({ email, password: hashPassword, name, role, photo, gender });
-    }
+//     // Create a new user based on the role
+//     if (role === 'patient') {
+//       user = new UserModel({ email, password: hashPassword, name, role, photo, gender });
+//     } else if (role === 'doctor') {
+//       user = new DoctorModel({ email, password: hashPassword, name, role, photo, gender });
+//     }
 
-    // Save the user to the database
-    await user.save();
-    res.status(201).json({ status:true ,message: 'User registered successfully.' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Internal server error, Try again' });
-  }
-};
+//     // Save the user to the database
+//     await user.save();
+//     res.status(201).json({ status:true ,message: 'User registered successfully.' });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: 'Internal server error, Try again' });
+//   }
+// };
 
 
 export async function login(req, res) {
@@ -104,138 +104,139 @@ export async function login(req, res) {
 
 /////////////////////////////////////////////////////
 
-// export async function register(req, res) {
-//     try {
-//       const { name, password, profile, email, role, gender } = req.body;
+export async function register(req, res) {
+
+    try {
+      const { name, password, photo, email, role, gender } = req.body;
   
-//       // Check if the given username or email already exists in either UserModel or DoctorModel
-//       const existingUserPatient = await UserModel.findOne({ $or: [{ name }, { email }] });
-//       const existingUserDoctor = await DoctorModel.findOne({ $or: [{ name }, { email }] });
+      // Check if the given username or email already exists in either UserModel or DoctorModel
+      const existingUserPatient = await UserModel.findOne({ $or: [{ name }, { email }] });
+      const existingUserDoctor = await DoctorModel.findOne({ $or: [{ name }, { email }] });
       
-//       if (role === 'patient' && existingUserDoctor) {
-//         return res.status(400).send({ error: "Email or username already exists as a doctor" });
-//       }
+      if (role === 'patient' && existingUserDoctor) {
+        return res.status(400).send({ error: "Email or username already exists as a doctor" });
+      }
       
-//       if (role === 'doctor' && existingUserPatient) { // Remove the extra space after 'doctor'
-//         return res.status(400).send({ error: "Email or username already exists as a patient" });
-//       }
+      if (role === 'doctor' && existingUserPatient) { // Remove the extra space after 'doctor'
+        return res.status(400).send({ error: "Email or username already exists as a patient" });
+      }
   
-//       // Create a registration data object
-//       const registrationData = {
-//         name,
-//         // Hash the password before saving it
-//         password: await bcrypt.hash(password, 10), // You can adjust the saltRounds (10) as needed
-//         profile,
-//         email,
-//         role,
-//         gender,
-//       };
+      // Create a registration data object
+      const registrationData = {
+        name,
+        // Hash the password before saving it
+        password: await bcrypt.hash(password, 10), // You can adjust the saltRounds (10) as needed
+        photo,
+        email,
+        role,
+        gender,
+      };
   
-//       // Store registrationData in req.app.locals
-//       req.app.locals.registrationData = registrationData;
+      // Store registrationData in req.app.locals
+      req.app.locals.registrationData = registrationData;
   
-//       // Generate a 6-digit OTP
-//       req.app.locals.OTP = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
+      // Generate a 6-digit OTP
+      req.app.locals.OTP = otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false });
   
-//       // Send the OTP via email
-//       await sendOtpEmail(email, req.app.locals.OTP);
-//       console.log('OTP code:', req.app.locals.OTP);
+      // Send the OTP via email
+      await sendOtpEmail(email, req.app.locals.OTP);
+      console.log('OTP code:', req.app.locals.OTP);
   
-//       // Respond immediately without waiting for OTP verification
-//       return res.status(200).send({ msg: "OTP sent to your email" });
+      // Respond immediately without waiting for OTP verification
+      return res.status(200).send({ msg: "OTP sent to your email" });
   
-//     } catch (error) {
-//       console.error("Error during registration:", error);
-//       return res.status(500).send({ error: "Internal server error" });
-//     }
-//   }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      return res.status(500).send({ error: "Internal server error" });
+    }
+  }
 
 
 
 
   
-//   export async function verifyOTP(req, res) {
-//     try {
-//       const { otp } = req.body;
+  export async function verifyOTP(req, res) {
+    try {
+      const { otp } = req.body;
   
-//       // Check if the provided OTP matches the OTP stored in app.locals
-//       const storedOTP = req.app.locals.OTP;
+      // Check if the provided OTP matches the OTP stored in app.locals
+      const storedOTP = req.app.locals.OTP;
   
-//       if (!storedOTP || storedOTP !== otp) {
-//         return res.status(400).send({ error: "Invalid OTP" });
-//       }
+      if (!storedOTP || storedOTP !== otp) {
+        return res.status(400).send({ error: "Invalid OTP" });
+      }
   
-//       // Clear the OTP from app.locals
-//       req.app.locals.OTP = null;
+      // Clear the OTP from app.locals
+      req.app.locals.OTP = null;
   
-//       // Retrieve the registration data from app.locals
-//       const registrationData = req.app.locals.registrationData;
+      // Retrieve the registration data from app.locals
+      const registrationData = req.app.locals.registrationData;
   
-//       // Determine the role from the registration data
-//       const { role } = registrationData;
+      // Determine the role from the registration data
+      const { role } = registrationData;
   
-//       // Create a new user document based on the role and save it
-//       let newUser;
-//       if (role === 'patient') {
-//         newUser = new UserModel(registrationData);
-//       } else if (role === 'doctor') {
-//         newUser = new DoctorModel(registrationData);
-//       } else {
-//         return res.status(400).send({ error: "Invalid role" });
-//       }
+      // Create a new user document based on the role and save it
+      let newUser;
+      if (role === 'patient') {
+        newUser = new UserModel(registrationData);
+      } else if (role === 'doctor') {
+        newUser = new DoctorModel(registrationData);
+      } else {
+        return res.status(400).send({ error: "Invalid role" });
+      }
   
-//       await newUser.save();
+      await newUser.save();
   
-//       return res.status(200).send({ msg: "OTP verified successfully and user registered" });
-//     } catch (error) {
-//       console.error("Error during OTP verification:", error);
-//       return res.status(500).send({ error: "Internal server error" });
-//     }
-//   }
+      return res.status(200).send({ msg: "OTP verified successfully and user registered" });
+    } catch (error) {
+      console.error("Error during OTP verification:", error);
+      return res.status(500).send({ error: "Internal server error" });
+    }
+  }
   
   
-//   export async function login(req, res) {
-//     const { email, password } = req.body;
+  // export async function login(req, res) {
+  //   const { email, password } = req.body;
     
-//     try {
-//       let user;
+  //   try {
+  //     let user;
     
-//       // Try to find the user in UserModel
-//       user = await UserModel.findOne({ email });
+  //     // Try to find the user in UserModel
+  //     user = await UserModel.findOne({ email });
     
-//       // If the user is not found in UserModel, try to find in DoctorModel
-//       if (!user) {
-//         user = await DoctorModel.findOne({ email });
-//       }
+  //     // If the user is not found in UserModel, try to find in DoctorModel
+  //     if (!user) {
+  //       user = await DoctorModel.findOne({ email });
+  //     }
     
-//       if (!user) {
-//         return res.status(404).send({ error: "Email not found" });
-//       }
+  //     if (!user) {
+  //       return res.status(404).send({ error: "Email not found" });
+  //     }
     
-//       // Compare the provided password with the hashed password stored in the database
-//       const passwordMatch = await bcrypt.compare(password, user.password);
+  //     // Compare the provided password with the hashed password stored in the database
+  //     const passwordMatch = await bcrypt.compare(password, user.password);
     
-//       if (!passwordMatch) {
-//         return res.status(400).send({ error: "Password does not match" });
-//       }
+  //     if (!passwordMatch) {
+  //       return res.status(400).send({ error: "Password does not match" });
+  //     }
     
-//       // Create a JWT token
-//       const token = jwt.sign(
-//         {
-//           userId: user._id,
-//           email: user.email,
-//           role: user.role // Assuming you have a 'role' field in your user and doctor models
-//         },
-//         process.env.JWT_SECRET,
-//         { expiresIn: "15d" }
-//       );
+  //     // Create a JWT token
+  //     const token = jwt.sign(
+  //       {
+  //         userId: user._id,
+  //         email: user.email,
+  //         role: user.role // Assuming you have a 'role' field in your user and doctor models
+  //       },
+  //       process.env.JWT_SECRET,
+  //       { expiresIn: "15d" }
+  //     );
     
-//       return res.status(200).send({
-//         msg: "Login Successful",
-//         email: user.email,
-//         token
-//       });
-//     } catch (error) {
-//       return res.status(500).send({ error: "Internal server error" });
-//     }
-//   }
+  //     return res.status(200).send({
+  //       msg: "Login Successful",
+  //       email: user.email,
+  //       token
+  //     });
+  //   } catch (error) {
+  //     return res.status(500).send({ error: "Internal server error" });
+  //   }
+  // }
