@@ -12,15 +12,36 @@ const bookingSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    ticketPrice: { type: String, required: true },
-    appointmentDate: {
-      type: Date,
-      required: true,
-    },
+    ticketPrice: { type: String },
+
     status: {
       type: String,
       enum: ["pending", "approved", "cancelled"],
       default: "pending",
+    },
+    razorpay_order_id: {
+      type: String,
+      required: true,
+    },
+    razorpay_payment_id: {
+      type: String,
+      required: true,
+    },
+    razorpay_signature: {
+      type: String,
+    },
+
+    timeSlots: [{
+      day: { type: String,  },
+      startTime: { type: String,  },
+      endTime: { type: String,  },
+    }],
+    dateOfPayment: {
+      type: Date,
+      default: Date,
+    },
+    appointmentDate: {
+      type: Date,
     },
     isPaid: {
       type: Boolean,

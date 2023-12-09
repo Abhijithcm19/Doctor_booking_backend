@@ -7,43 +7,49 @@ const DoctorSchema = new mongoose.Schema({
   phone: { type: Number },
   photo: { type: String },
   ticketPrice: { type: Number },
-  role: {
-    type: String,
-  },
+  role: { type: String },
 
   // Fields for doctors only
   specialization: { type: String },
-  qualifications: {
-    type: Array,
-  },
-
-  experiences: {
-    type: Array,
-  },
-
   bio: { type: String, maxLength: 50 },
   about: { type: String },
-  timeSlots: { type: Array },
+  
+  // Qualifications array
+  qualifications: [{
+    startingDate: { type: Date },
+    endDate: { type: Date },
+    degree: { type: String },
+    university: { type: String },
+  }],
+
+  // Experiences array
+  experiences: [{
+    startingDate: { type: Date },
+    endDate: { type: Date },
+    position: { type: String },
+    hospital: { type: String },
+    year: { type: String },
+  }],
+
+  // Time slots array (assuming it stores time slot objects)
+  timeSlots: [{
+    day: { type: String, required: true },
+    startTime: { type: String, required: true },
+    endTime: { type: String, required: true },
+  }],
+
   reviews: [{ type: mongoose.Types.ObjectId, ref: "Review" }],
-  averageRating: {
-    type: Number,
-    default: 0,
-  },
-  totalRating: {
-    type: Number,
-    default: 0,
-  },
+  averageRating: { type: Number, default: 0 },
+  totalRating: { type: Number, default: 0 },
   isApproved: {
     type: String,
     enum: ["pending", "approved", "cancelled"],
     default: "pending",
   },
-  isBlocked: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
+  isBlocked: { type: Boolean, required: true, default: false },
   appointments: [{ type: mongoose.Types.ObjectId, ref: "Appointment" }],
 });
+
+
 
 export default mongoose.model("Doctor", DoctorSchema);

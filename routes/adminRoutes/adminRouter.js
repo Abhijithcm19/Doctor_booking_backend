@@ -8,11 +8,10 @@ import * as adminController from '../../controllers/adminController/adminControl
 adminRoute.post('/login',adminController.adminLogin )
 
 adminRoute.get('/users',adminController.getAllUser)
-adminRoute.put('/users/:userId/block-unblock', adminController.blockAndUnblockUser);
+adminRoute.put('/users/block-toggle/:id', adminController.userBockAndUnblock);
 
 adminRoute.get('/doctors',adminController.getAllDoctor)
-adminRoute.put('/doctors/:doctorId/block-unblock', adminController.blockAndUnblockDoctor);
-
+adminRoute.put('/doctors/:id', adminController.doctorApproval);
 
 adminRoute.post('/services',adminController.createService )
 adminRoute.get('/services', adminController.getAllServices);

@@ -87,55 +87,82 @@ export const blockAndUnblockUser = async (req, res) => {
 };
 
 
-export const getAllDoctor = async (req, res) => {
+export async function getAllDoctor(req, res) {
   try {
-    const getAllDoctor = await DoctorModel.find().sort({ createdAt: -1 });
+    const { query } = req.query;
+    let doctors;
 
-    res.json({
-      status: true,
-      AllDoctors: getAllDoctor,
-    });
-  } catch (error) {
-    console.log(error.message);
-  }
-};
-
-
-export const blockAndUnblockDoctor = async (req, res) => {
-  const doctorId = req.params.doctorId;
-
-  
-
-  try {
-    const doctor = await DoctorModel.findById(doctorId);
-
-    if (!doctor) {
-      return res.status(404).json({ error: "Doctor not found" });
+    if (query) {
+      doctors = await DoctorModel.find({
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { specialization: { $regex: query, $options: 'i' } },
+        ],
+      });
+    } else {
+      doctors = await DoctorModel.find({});
     }
 
-    doctor.isBlocked = !doctor.isBlocked; // Toggle the isBlocked field
-
-    await doctor.save(); // Save the updated doctor
-
-    const message = doctor.isBlocked
-      ? `${doctor.name} Blocked`
-      : `${doctor.name} Unblocked`;
-
-    return res.status(200).json({ message }); // Return the appropriate message
+    if (doctors && doctors.length > 0) {
+      res.status(200).send({ success: true, msg: 'Doctors Found...!', data: doctors });
+    } else {
+      res.status(404).send({ success: false, msg: 'No doctors found...!' });
+    }
   } catch (error) {
-    return res.status(500).json({ error: "Internal server error" });
+    console.error('Error fetching doctors:', error);
+    res.status(500).send({ success: false, msg: 'Failed to fetch doctors...!' });
+  }
+}
+
+export const doctorApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('Received request to toggle approval for doctor ID:', id);
+
+    const doctor = await DoctorModel.findById(id);
+    if (!doctor) {
+      return res.status(404).send({ success: false, msg: 'Doctor not found...' });
+    }
+
+    const updatedStatus = doctor.isApproved === 'approved' ? 'cancelled' : 'approved';
+    doctor.isApproved = updatedStatus;
+    await doctor.save();
+
+    console.log('Doctor approval status updated:', doctor);
+    res.status(200).send({ success: true, msg: 'Doctor approval status updated!', data: doctor });
+  } catch (error) {
+    console.error('Error toggling doctor approval status:', error);
+    res.status(500).send({ success: false, msg: 'Failed to update doctor approval status...' });
   }
 };
 
 
 
+export const userBockAndUnblock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await UserModel.findById(id);
+    console.log('User ID:', id); 
+    if (!user) {
+      return res.status(404).send({ success: false, msg: 'user not found...' });
+    }
+   
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+    
+    res.json({ message: 'User status toggled successfully', isBlocked: user.isBlocked });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 export const createService = async (req, res) => {
   try {
-      const { name, isBlocked } = req.body;
+      const { name,discription,isBlocked } = req.body;
       const newService = new Service({
           name,
+          discription,
           isBlocked
       });
       const savedService = await newService.save();
@@ -145,7 +172,6 @@ export const createService = async (req, res) => {
   }
 };
 
-// Get all services
 export const getAllServices = async (req, res) => {
   try {
       const services = await Service.find();
@@ -155,7 +181,6 @@ export const getAllServices = async (req, res) => {
   }
 };
 
-// Update a service by ID
 export const updateService = async (req, res) => {
   try {
       const { id } = req.params;

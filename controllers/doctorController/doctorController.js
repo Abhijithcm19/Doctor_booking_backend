@@ -4,17 +4,23 @@ import BookingModel from '../../models/BookingSchema.js';
 
   
   
-  export async function updateDoctor(req, res){
-    const id = req.params.id
-    try {
-      const updateUser = await DoctorModel.findByIdAndUpdate(id, {$set:req.body},{new:true})
+export const updateDoctor = async (req, res) => {
+  const doctorId = req.params.id;
+  const updatedDoctorData = req.body;
 
-      res.status(200).send({ success:true ,msg: "Record Updated...!",data:updateUser });
-     
-    } catch (error) {
-      res.status(500).send({ msg: "failed to Updated...!" });
+
+  try {
+    const updatedDoctor = await DoctorModel.findByIdAndUpdate(doctorId, updatedDoctorData, { new: true });
+
+    if (!updatedDoctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
     }
+
+    res.status(200).json({ message: 'Doctor updated successfully', doctor: updatedDoctor });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating doctor', error: error.message });
   }
+};
 
   export async function deleteDoctor(req, res){
     const id = req.params.id
@@ -58,10 +64,10 @@ import BookingModel from '../../models/BookingSchema.js';
       }
   
       if (doctors && doctors.length > 0) {
-        // Return the list of doctors if found
+       
         res.status(200).send({ success: true, msg: 'Doctors Found...!', data: doctors });
       } else {
-        // Return a message if no doctors are found
+      
         res.status(404).send({ success: false, msg: 'No doctors found...!' });
       }
     } catch (error) {

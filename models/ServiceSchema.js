@@ -5,6 +5,11 @@ const ServiceSchema = new mongoose.Schema({
         required: true,
         unique: true 
     },
+    discription:{
+        type: String,
+        required: true,
+        unique: true 
+    },
     iBlocked:{
         type:Boolean,
         default:false,
