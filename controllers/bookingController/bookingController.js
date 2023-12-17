@@ -1,7 +1,9 @@
-import BookingModel from "../../models/BookingSchema.js"
+import BookingModel from "../../models/BookingSchema.js";
+import DoctorModel from "../../models/DoctorSchema.js";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
+import moment from "moment";
 dotenv.config();
 
 export const createOrder = async (req, res) => {
@@ -25,9 +27,6 @@ export const createOrder = async (req, res) => {
   }
 };
 
-
-
-
 export const verifyPayment = async (req, res) => {
   try {
     const {
@@ -37,13 +36,27 @@ export const verifyPayment = async (req, res) => {
       user,
       doctor,
       amount,
-      day,
       startTime,
-      endTime,
-      date
+      date,
     } = req.body;
 
-    console.log("verifyPaymenttttttttt", razorpay_order_id, razorpay_payment_id, razorpay_signature, amount,date);
+    const momentStartTime = moment(startTime, "HH:mm");
+
+    const momentEndTime = momentStartTime.clone().add(30, "minutes");
+    
+    const formattedStartTime = momentStartTime.toISOString();
+    const formattedEndTime = momentEndTime.toISOString();
+
+    console.log("times", formattedStartTime, formattedEndTime);
+    console.log(
+      "verifyPaymenttttttttt",
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      amount,
+      date
+    );
+
     const formattedDate = new Date(date);
     const sha = crypto.createHmac("sha256", process.env.SECRET);
     sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
@@ -57,16 +70,17 @@ export const verifyPayment = async (req, res) => {
     await BookingModel.create({
       user,
       doctor,
-      ticketPrice:amount,
+      ticketPrice: amount,
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      timeSlots: [{
-        day: day,
-        startTime: startTime,
-        endTime: endTime,
-      }],
-      appointmentDate: formattedDate
+      timeSlots: [
+        {
+          startTime: formattedStartTime,
+          endTime: formattedEndTime,
+        },
+      ],
+      appointmentDate: formattedDate,
     });
 
     res.json({
@@ -76,13 +90,99 @@ export const verifyPayment = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Error verifying payment" });
+    res
+      .status(500)
+      .json({ success: false, message: "Error verifying payment" });
   }
 };
 
 
+export const getAvailableSlot = async (req, res) => {
+  try {
+    const { doctorId, startTime, date } = req.body;
 
+    const doctor = await DoctorModel.findById(doctorId).lean().exec();
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
 
+    const momentStartTime = moment(startTime, "HH:mm");
+    const momentEndTime = momentStartTime.clone().add(30, "minutes");
+    const formattedStartTime = momentStartTime.toISOString();
+    const formattedEndTime = momentEndTime.toISOString();
+    const formattedDate = new Date(date);
 
+    const bookedSlots = await BookingModel.find({
+      doctor: doctorId,
+      appointmentDate: formattedDate,
+      $or: [
+        {
+          $and: [
+            { "timeSlots.startTime": { $lte: formattedStartTime } },
+            { "timeSlots.endTime": { $gt: formattedStartTime } },
+          ],
+        },
+        {
+          $and: [
+            { "timeSlots.startTime": { $lt: formattedEndTime } },
+            { "timeSlots.endTime": { $gte: formattedEndTime } },
+          ],
+        },
+      ],
+    });
 
+    const availableSlots = doctor.timeSlots.filter((slot) => {
+      const isBooked = bookedSlots.some((booking) => {
+        return (
+          moment(slot.startTime, "HH:mm").isSameOrAfter(startTime) &&
+          moment(slot.endTime, "HH:mm").isSameOrBefore(momentEndTime)
+        );
+      });
+      return !isBooked;
+    });
 
+    if (availableSlots.length > 0) {
+      res.json({ message: "Available slots found", availableSlots });
+    } else {
+      res.json({ message: "No available slots" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error finding available slots" });
+  }
+};
+
+// export const getAvailableSlot = async (req, res) => {
+//   try {
+//     const date = moment(req.body.date, "DD-MM-YYYY").toISOString;
+//     const fromTime = moment(req.body.startTime, "HH:mm")
+//       .subtract(1, "hours")
+//       .toISOString();
+//     const toTime = moment(req.body.startTime, "HH:mm")
+//       .add(1, "hours")
+//       .toISOString();
+//     const doctorId = req.body.doctorId;
+//     const appointments = await BookingModel.find({
+//       doctorId,
+//       date,
+//       time: {
+//         $gte: fromTime,
+//         $lte: toTime,
+//       },
+//     });
+//     if (appointments.length > 0) {
+//       return res
+//         .status(200)
+//         .send({ message: "appointments not avilable at this time" });
+//     } else {
+//       return res.status(200).send({ message: "appointments avilable " });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       error,
+//       message: "Error in booking",
+//     });
+//   }
+// };

@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import Doctor from "./DoctorSchema.js";
+import User from "./UserSchema.js";
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -17,7 +19,7 @@ const bookingSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["pending", "approved", "cancelled"],
-      default: "pending",
+      default: "approved",
     },
     razorpay_order_id: {
       type: String,
@@ -32,7 +34,6 @@ const bookingSchema = new mongoose.Schema(
     },
 
     timeSlots: [{
-      day: { type: String,  },
       startTime: { type: String,  },
       endTime: { type: String,  },
     }],
@@ -41,7 +42,7 @@ const bookingSchema = new mongoose.Schema(
       default: Date,
     },
     appointmentDate: {
-      type: Date,
+      type: String,
     },
     isPaid: {
       type: Boolean,

@@ -27,43 +27,6 @@ export function generateToken(user) {
 }
 
 
-//////////////////////////////////////////////////
-// export const register = async (req, res) => {
-//   const { email, password, name, role, photo, gender } = req.body;
-//   let user; // Declare the user variable here
-
-//   try {
-//     if (role === 'patient') {
-//       user = await UserModel.findOne({ email });
-//     } else if (role === 'doctor') {
-//       user = await DoctorModel.findOne({ email });
-//     }
-
-//     if (user) {
-//       // User with the same email already exists
-//       return res.status(400).json({ message: 'User with this email already exists.' });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const hashPassword = await bcrypt.hash(password, salt);
-
-//     // Create a new user based on the role
-//     if (role === 'patient') {
-//       user = new UserModel({ email, password: hashPassword, name, role, photo, gender });
-//     } else if (role === 'doctor') {
-//       user = new DoctorModel({ email, password: hashPassword, name, role, photo, gender });
-//     }
-
-//     // Save the user to the database
-//     await user.save();
-//     res.status(201).json({ status:true ,message: 'User registered successfully.' });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'Internal server error, Try again' });
-//   }
-// };
-
-
 export async function login(req, res) {
   const { email } = req.body;
 
@@ -156,9 +119,6 @@ export async function register(req, res) {
   }
 
 
-
-
-  
   export async function verifyOTP(req, res) {
     try {
       const { otp } = req.body;
@@ -199,48 +159,4 @@ export async function register(req, res) {
   }
   
   
-  // export async function login(req, res) {
-  //   const { email, password } = req.body;
-    
-  //   try {
-  //     let user;
-    
-  //     // Try to find the user in UserModel
-  //     user = await UserModel.findOne({ email });
-    
-  //     // If the user is not found in UserModel, try to find in DoctorModel
-  //     if (!user) {
-  //       user = await DoctorModel.findOne({ email });
-  //     }
-    
-  //     if (!user) {
-  //       return res.status(404).send({ error: "Email not found" });
-  //     }
-    
-  //     // Compare the provided password with the hashed password stored in the database
-  //     const passwordMatch = await bcrypt.compare(password, user.password);
-    
-  //     if (!passwordMatch) {
-  //       return res.status(400).send({ error: "Password does not match" });
-  //     }
-    
-  //     // Create a JWT token
-  //     const token = jwt.sign(
-  //       {
-  //         userId: user._id,
-  //         email: user.email,
-  //         role: user.role // Assuming you have a 'role' field in your user and doctor models
-  //       },
-  //       process.env.JWT_SECRET,
-  //       { expiresIn: "15d" }
-  //     );
-    
-  //     return res.status(200).send({
-  //       msg: "Login Successful",
-  //       email: user.email,
-  //       token
-  //     });
-  //   } catch (error) {
-  //     return res.status(500).send({ error: "Internal server error" });
-  //   }
-  // }
+  

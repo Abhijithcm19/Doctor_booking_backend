@@ -29,6 +29,7 @@
     "joi-password-complexity": "^5.2.0",
     "jsonwebtoken": "^9.0.1",
     "mailgen": "^2.0.27",
+    "moment": "^2.29.4",
     "mongodb": "^5.8.1",
     "mongodb-memory-server": "^8.15.1",
     "mongoose": "^7.4.4",

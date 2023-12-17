@@ -4,33 +4,29 @@ import UserModel from '../../models/UserSchema.js'
 import reviewModel from '../../models/ReviewSchema.js'
 
 
-//get all reviews
-export const getAllReviews =async (req,res)=>{
+export const getAllReviews = async (req, res) => {
     try {
-        const reviews = await reviewModel.find({})
-
-        res.status(200).json({success:true, message: "Successful", data:reviews})
+      const reviews = await reviewModel.find({}).populate('user', 'name photo');
+      res.status(200).json({ success: true, message: "Successful", data: reviews });
     } catch (error) {
-        res.status(200).json({success:false, message: "Not Found"})
-
+      res.status(200).json({ success: false, message: "Not Found" });
     }
-}
- 
+  };
+  
+
 export const createReview = async (req, res) => {
   if (!req.body.doctor) req.body.doctor = req.params.doctorId;
   if (!req.body.user) req.body.user = req.userId;
-  const newReview = new  reviewModel(req.body);
+  const newReview = new reviewModel(req.body);
 
   try {
-   const savedReview = await newReview.save()
-    await DoctorModel.findByIdAndUpdate(req.body.doctor, {
-      $push: { reviews: savedReview._id },
-    });
+      const savedReview = await newReview.save();
+      await DoctorModel.findByIdAndUpdate(req.body.doctor, {
+          $push: { reviews: savedReview._id },
+      });
 
-    res
-      .status(200)
-      .json({ success: true, message: "Review submitted", data: savedReview });
+      res.status(200).json({ success: true, message: "Review submitted", data: savedReview });
   } catch (error) {
-    res.status(500).json({ success: false, message: err.message });
+      res.status(500).json({ success: false, message: error.message }); // Change 'err' to 'error'
   }
 };

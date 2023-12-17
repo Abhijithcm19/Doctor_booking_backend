@@ -48,8 +48,21 @@ const DoctorSchema = new mongoose.Schema({
   },
   isBlocked: { type: Boolean, required: true, default: false },
   appointments: [{ type: mongoose.Types.ObjectId, ref: "Appointment" }],
+  serviceName: {
+    type: String,
+    required: true,
+    unique: true 
+},
+serviceDiscription:{
+    type: String,
+    required: true,
+    unique: true 
+},
+serviceIBlocked:{
+    type:Boolean,
+    default:false,
+ }
 });
-
 
 
 export default mongoose.model("Doctor", DoctorSchema);

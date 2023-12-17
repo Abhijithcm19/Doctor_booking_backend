@@ -26,6 +26,14 @@ isVerified:{
   gender: { type: String, enum: ["male", "female", "other"] },
   bloodType: { type: String },
   appointments: [{ type: mongoose.Types.ObjectId, ref: "Appointment" }],
+  notification:{
+    type: Array,
+    default:[]
+  },
+  seennotification:{
+    type: Array,
+    default:[]
+  },
 },{timestamps: true});
 
 export default mongoose.model.Users|| mongoose.model("User", UserSchema);

@@ -24,7 +24,7 @@ const port = process.env.PORT || 8000
 // }
 
 connectDatabase();
-// app.use(morgan('tiny'));
+app.use(morgan('tiny'));
 app.disable('x-powered-by') // less hackers know about our stack
 app.use(express.urlencoded({extended:false}))
 app.use(cookieSession({name:"session",

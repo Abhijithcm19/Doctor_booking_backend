@@ -5,7 +5,7 @@ import {
     getAllDoctor,
     updateDoctor,
     deleteDoctor,
-    getDoctorProfile
+    getDoctorProfile,getUserAppointments
 } from '../../controllers/doctorController/doctorController.js'
 import { authenticate, restrict } from "../../auth/verifyToken.js"
 import reviewRoute from '../reviewRoutes/reviewRouter.js'
@@ -20,6 +20,7 @@ router.get('/',getAllDoctor)
 router.put('/:id',authenticate, restrict(["doctor"]),updateDoctor)
 router.delete('/:id',authenticate, restrict(["doctor"]),deleteDoctor)
 router.get('/profile/me', authenticate, restrict(['doctor']),getDoctorProfile)
+router.get('/my-appointments/:doctorId', authenticate,restrict(['doctor']), getUserAppointments);
 
 
 export default  router;

@@ -1,6 +1,6 @@
-import { populate } from 'dotenv';
 import DoctorModel from '../../models/DoctorSchema.js';
 import BookingModel from '../../models/BookingSchema.js';
+import mongoose from 'mongoose';
 
   
   
@@ -98,3 +98,43 @@ export const getDoctorProfile = async (req,res)=>{
   }
 }
 
+
+export const getUserAppointments = async (req, res) => {
+  try {
+    const doctorId = req.params.doctorId;
+
+    let convertedDoctorId;
+    try {
+      convertedDoctorId = mongoose.Types.ObjectId.createFromHexString(doctorId);
+    } catch (error) {
+      return res.status(400).json({ message: 'Invalid doctorId' });
+    }
+
+    const pipeline = [
+      {
+        $match: {
+          doctor: convertedDoctorId
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userDetails'
+        }
+      }
+    ];
+
+    const bookings = await BookingModel.aggregate(pipeline);
+
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({ message: 'No appointments found for this doctor' });
+    }
+
+    res.status(200).json(bookings);
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: 'Failed to fetch appointments', error: error.message });
+  }
+};
