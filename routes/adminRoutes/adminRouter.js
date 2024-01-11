@@ -1,22 +1,22 @@
-import {Router} from "express"
+import { Router } from "express";
 const adminRoute = Router();
 
-import * as adminController from '../../controllers/adminController/adminController.js'
+import * as adminController from "../../controllers/adminController/adminController.js";
 
+//GET
+adminRoute.get("/users", adminController.getAllUser);
+adminRoute.get("/doctors", adminController.getAllDoctor);
+adminRoute.get("/services", adminController.getAllServices);
 
+//POST
+adminRoute.post("/login", adminController.adminLogin);
+adminRoute.post("/services", adminController.createService);
 
-adminRoute.post('/login',adminController.adminLogin )
+//PUT & DEL
 
-adminRoute.get('/users',adminController.getAllUser)
-adminRoute.put('/users/block-toggle/:id', adminController.userBockAndUnblock);
+adminRoute.put("/users/block-toggle/:id", adminController.userBockAndUnblock);
+adminRoute.put("/services/:id", adminController.updateService);
+adminRoute.put("/doctors/:id", adminController.doctorApproval);
+adminRoute.delete("/services/:id", adminController.deleteService);
 
-adminRoute.get('/doctors',adminController.getAllDoctor)
-adminRoute.put('/doctors/:id', adminController.doctorApproval);
-
-adminRoute.post('/services',adminController.createService )
-adminRoute.get('/services', adminController.getAllServices);
-adminRoute.put('/services/:id', adminController.updateService);
-adminRoute.delete('/services/:id', adminController.deleteService);
-
-
-export default adminRoute
+export default adminRoute;

@@ -7,6 +7,7 @@ import moment from "moment";
 dotenv.config();
 
 export const createOrder = async (req, res) => {
+  console.log("createorder",req.body);
   try {
     const razorpay = new Razorpay({
       key_id: process.env.KEY,
@@ -28,6 +29,7 @@ export const createOrder = async (req, res) => {
 };
 
 export const verifyPayment = async (req, res) => {
+  console.log("verifypayment",req.body);
   try {
     const {
       razorpay_order_id,
@@ -43,19 +45,9 @@ export const verifyPayment = async (req, res) => {
     const momentStartTime = moment(startTime, "HH:mm");
 
     const momentEndTime = momentStartTime.clone().add(30, "minutes");
-    
+
     const formattedStartTime = momentStartTime.toISOString();
     const formattedEndTime = momentEndTime.toISOString();
-
-    console.log("times", formattedStartTime, formattedEndTime);
-    console.log(
-      "verifyPaymenttttttttt",
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      amount,
-      date
-    );
 
     const formattedDate = new Date(date);
     const sha = crypto.createHmac("sha256", process.env.SECRET);
@@ -95,7 +87,6 @@ export const verifyPayment = async (req, res) => {
       .json({ success: false, message: "Error verifying payment" });
   }
 };
-
 
 export const getAvailableSlot = async (req, res) => {
   try {
@@ -151,38 +142,3 @@ export const getAvailableSlot = async (req, res) => {
     res.status(500).json({ message: "Error finding available slots" });
   }
 };
-
-// export const getAvailableSlot = async (req, res) => {
-//   try {
-//     const date = moment(req.body.date, "DD-MM-YYYY").toISOString;
-//     const fromTime = moment(req.body.startTime, "HH:mm")
-//       .subtract(1, "hours")
-//       .toISOString();
-//     const toTime = moment(req.body.startTime, "HH:mm")
-//       .add(1, "hours")
-//       .toISOString();
-//     const doctorId = req.body.doctorId;
-//     const appointments = await BookingModel.find({
-//       doctorId,
-//       date,
-//       time: {
-//         $gte: fromTime,
-//         $lte: toTime,
-//       },
-//     });
-//     if (appointments.length > 0) {
-//       return res
-//         .status(200)
-//         .send({ message: "appointments not avilable at this time" });
-//     } else {
-//       return res.status(200).send({ message: "appointments avilable " });
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({
-//       success: false,
-//       error,
-//       message: "Error in booking",
-//     });
-//   }
-// };

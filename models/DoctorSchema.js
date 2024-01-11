@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Services from "./ServiceSchema.js";
 
 const DoctorSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -10,33 +11,43 @@ const DoctorSchema = new mongoose.Schema({
   role: { type: String },
 
   // Fields for doctors only
-  specialization: { type: String },
+
+  specialization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Service",
+  },
   bio: { type: String, maxLength: 50 },
   about: { type: String },
-  
+
   // Qualifications array
-  qualifications: [{
-    startingDate: { type: Date },
-    endDate: { type: Date },
-    degree: { type: String },
-    university: { type: String },
-  }],
+  qualifications: [
+    {
+      startingDate: { type: Date },
+      endDate: { type: Date },
+      degree: { type: String },
+      university: { type: String },
+    },
+  ],
 
   // Experiences array
-  experiences: [{
-    startingDate: { type: Date },
-    endDate: { type: Date },
-    position: { type: String },
-    hospital: { type: String },
-    year: { type: String },
-  }],
+  experiences: [
+    {
+      startingDate: { type: Date },
+      endDate: { type: Date },
+      position: { type: String },
+      hospital: { type: String },
+      year: { type: String },
+    },
+  ],
 
-  // Time slots array (assuming it stores time slot objects)
-  timeSlots: [{
-    day: { type: String, required: true },
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true },
-  }],
+  // Time slots array
+  timeSlots: [
+    {
+      day: { type: String, required: true },
+      startTime: { type: String, required: true },
+      endTime: { type: String, required: true },
+    },
+  ],
 
   reviews: [{ type: mongoose.Types.ObjectId, ref: "Review" }],
   averageRating: { type: Number, default: 0 },
@@ -48,21 +59,6 @@ const DoctorSchema = new mongoose.Schema({
   },
   isBlocked: { type: Boolean, required: true, default: false },
   appointments: [{ type: mongoose.Types.ObjectId, ref: "Appointment" }],
-  serviceName: {
-    type: String,
-    required: true,
-    unique: true 
-},
-serviceDiscription:{
-    type: String,
-    required: true,
-    unique: true 
-},
-serviceIBlocked:{
-    type:Boolean,
-    default:false,
- }
 });
-
 
 export default mongoose.model("Doctor", DoctorSchema);

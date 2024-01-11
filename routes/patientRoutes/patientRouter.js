@@ -15,7 +15,7 @@ patientRoute.post('/payments', authenticate,createOrder);
 patientRoute.post('/paymentverification',authenticate, verifyPayment);
 patientRoute.post('/get-all-notification',authenticate,  patientController.getAllNotification);
 patientRoute.post('/available-slots',authenticate,getAvailableSlot);
-
+patientRoute.post('/submitForm',patientController.submitContactForm);
 
 export default patientRoute
 

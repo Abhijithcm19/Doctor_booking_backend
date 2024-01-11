@@ -6,37 +6,31 @@ dotenv.config();
 
 export async function sendOtpEmail(toEmail, otp) {
     try {
-      // Create a Nodemailer transporter
       const transporter = nodemailer.createTransport({
-        service: 'gmail', // Use your email service provider
+        service: 'gmail', 
         auth: {
           user: process.env.EMAIL,
           pass: process.env.EMAIL_PASSWORD,
         },
       });
   
-      // Create a Mailgen instance with your desired settings
       const mailGenerator = new Mailgen({
         theme: 'default',
         product: {
-          name: 'Medcare',
-          link: 'https://yourapp.com',
-          // Add any other product-related information here
+          name: 'mediMate',
+          link: 'https://medimate.com',
         },
       });
   
-      // Generate the email body using Mailgen
-    // Generate the email body using Mailgen
 const email = {
     body: {
         intro: `Your OTP code is: ${otp}`,
-        code: otp, // Display the OTP here without curly braces
+        code: otp,
     },
 };
   
       const emailBody = mailGenerator.generate(email);
   
-      // Create the mailOptions for Nodemailer
       const mailOptions = {
         from: process.env.EMAIL,
         to: toEmail,
@@ -44,10 +38,9 @@ const email = {
         html: emailBody,
       };
   
-      // Send the email
       await transporter.sendMail(mailOptions);
   
-      console.log('OTP email sent successfully');
+      console.log('OTP email sent successfully',otp);
     } catch (error) {
       console.error('Error sending OTP email:', error);
     }
@@ -57,7 +50,6 @@ const email = {
 export const registerMail = async (req, res) => {
     const { username, userEmail, text, subject } = req.body;
     
-    // body of the email
     var email = {
         body: {
             name: username,

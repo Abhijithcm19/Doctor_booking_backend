@@ -33,10 +33,12 @@ const bookingSchema = new mongoose.Schema(
       type: String,
     },
 
-    timeSlots: [{
-      startTime: { type: String,  },
-      endTime: { type: String,  },
-    }],
+    timeSlots: [
+      {
+        startTime: { type: String },
+        endTime: { type: String },
+      },
+    ],
     dateOfPayment: {
       type: Date,
       default: Date,
