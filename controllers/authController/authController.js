@@ -85,13 +85,13 @@ export async function register(req, res) {
     if (role === "patient" && existingUserDoctor) {
       return res
         .status(400)
-        .send({ error: "Email or username already exists as a doctor" });
+        .send({ error: "Email or username already exists " });
     }
 
     if (role === "doctor" && existingUserPatient) {
       return res
         .status(400)
-        .send({ error: "Email or username already exists as a patient" });
+        .send({ error: "Email or username already exists " });
     }
 
     const registrationData = {
@@ -176,6 +176,37 @@ export async function resendOTP(req, res) {
   } catch (error) {
     console.error("Error resending OTP:", error);
     return res.status(500).send({ error: "Internal server error" });
+  }
+}
+
+export async function deleteAccount(req, res) {
+  const { email, password, role } = req.body;
+
+  try {
+    let user = null;
+  
+    if (role === "patient") {
+      user = await UserModel.findOne({ email });
+    } else if (role === "doctor") {
+      user = await DoctorModel.findOne({ email });
+    }
+  
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+  
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+  
+    if (!isPasswordMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+  
+    await user.deleteOne();
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error during account deletion:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 

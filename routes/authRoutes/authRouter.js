@@ -11,5 +11,6 @@ authRoute.post("/login", authController.login);
 authRoute.post("/resendOTP", authController.resendOTP);
 authRoute.post("/forgotpassword", authController.forgotPassword);
 authRoute.post("/resetpassword", authController.resetPassword);
+authRoute.delete("/delete-account", authController.deleteAccount);
 
 export default authRoute;

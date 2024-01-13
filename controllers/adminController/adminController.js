@@ -7,6 +7,9 @@ import Service from "../../models/ServiceSchema.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+
+
+
 export async function adminLogin(req, res) {
   const { email, password } = req.body;
 
@@ -219,3 +222,4 @@ export const deleteService = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+

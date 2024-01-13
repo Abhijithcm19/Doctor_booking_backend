@@ -8,7 +8,6 @@ const ServiceSchema = new mongoose.Schema({
   discription: {
     type: String,
     required: true,
-    unique: true,
   },
   iBlocked: {
     type: Boolean,
