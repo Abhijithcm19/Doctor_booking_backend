@@ -17,18 +17,29 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
 
+// Allowed frontends: the Netlify site (CLIENT_URL) and local dev servers
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+]
+  .filter(Boolean)
+  .map((url) => url.replace(/\/$/, ""));
+
 const corsOptions = {
-    origin:true
-}
+  origin: allowedOrigins,
+  credentials: true,
+};
 
 connectDatabase();
+app.use(cors(corsOptions));
 app.use(morgan("tiny"));
 app.disable("x-powered-by"); // less hackers know about our stack
 app.use(express.urlencoded({ extended: false }));
 app.use(
   cookieSession({
     name: "session",
-    keys: ["abhijith"],
+    keys: [process.env.SESSION_SECRET || "dev-session-secret"],
     maxAge: 24 * 60 * 60 * 100,
   })
 );
@@ -38,16 +49,16 @@ app.use(passport.session());
 
 // middleware
 app.use(express.json());
-app.use(cors());
-// app.use(cookieParser(corsOptions))
+
+// Health check (Render pings this)
+app.get("/", (req, res) => res.send("API running"));
 
 app.use("/api/v1/auth", authRoute);
 app.use("/users", patientRoute);
 app.use("/doctors", doctorRoute);
 app.use("/admin", adminRoute);
-app.use("/reviews ", reviewRoute);
+app.use("/reviews", reviewRoute);
 
 app.listen(port, () => {
-  connectDatabase();
-  console.log(`Server connected to http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });

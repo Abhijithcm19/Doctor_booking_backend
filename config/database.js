@@ -1,43 +1,19 @@
-//database connection
-
-
+// Database connection (MONGOURL: Atlas in production, local in dev)
 
 import mongoose from "mongoose";
 
 const connectDatabase = async () => {
-    try {
-        const connectionString = process.env.MONG_URI; 
+  try {
+    const connectionString =
+      process.env.MONGOURL || "mongodb://127.0.0.1:27017/Booking_App";
 
-        const con = await mongoose.connect(connectionString, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+    await mongoose.connect(connectionString);
 
-        console.log("MongoDB Atlas connected");
-    } catch (err) {
-        console.error("Error connecting to MongoDB Atlas:", err);
-        process.exit(1);
-    }
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error("Error connecting to MongoDB:", err);
+    process.exit(1);
+  }
 };
 
 export default connectDatabase;
-
-// mongoose.set('strictQuery',false)
-//     const connectDatabase = async () => {
-//         try {
-//             const con = await mongoose.connect(process.env.MONGOURL, {
-//                 useNewUrlParser: true,
-//                 useUnifiedTopology: true,
-//             })
-//             console.log("mongo db databce conncted");
-//         } catch (err) {
-    
-//             console.log(err);
-//             process.exit(1);
-    
-//         }
-//     }
-    
-
-
-// export default  connectDatabase;
